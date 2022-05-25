@@ -9,6 +9,26 @@ export default class TaxonomiesController {
     return all
   }
 
+  public async list({ request, response }: HttpContextContract) {
+    try {
+      const all = await Taxonomy.all()
+
+      all.forEach((taxonomy) => {
+        console.log(taxonomy.products)
+      })
+
+      response.send({ success: all })
+      response.status(200)
+      return response
+    } catch (err) {
+      console.log(err)
+
+      response.send({ failure: true })
+      response.status(500)
+      return response
+    }
+  }
+
   public async create({ request, response }: HttpContextContract) {
     try {
       const qs = request.qs()

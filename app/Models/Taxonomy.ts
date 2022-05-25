@@ -1,5 +1,7 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, column, manyToMany, ManyToMany } from '@ioc:Adonis/Lucid/Orm'
+
+import Product from 'App/Models/Product'
 
 export default class Taxonomy extends BaseModel {
   public static table = 'taxonomies'
@@ -10,12 +12,19 @@ export default class Taxonomy extends BaseModel {
   @column()
   public name: string
 
-  @column({ serializeAs: null })
-  public password: string
-
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   public updatedAt: DateTime
+
+  @manyToMany(() => Product, {
+    localKey: 'id', // taxonomy id
+    pivotForeignKey: 'taxonomy_id',
+    relatedKey: 'id', // product id
+    pivotRelatedForeignKey: 'product_id',
+    pivotTable: 'taxonomy_product',
+    pivotTimestamps: true,
+  })
+  public products: ManyToMany<typeof Product>
 }

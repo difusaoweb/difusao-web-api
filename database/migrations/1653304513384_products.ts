@@ -1,6 +1,6 @@
 import BaseSchema from '@ioc:Adonis/Lucid/Schema'
 
-export default class extends BaseSchema {
+export default class Products extends BaseSchema {
   protected tableName = 'products'
 
   public async up() {
@@ -10,12 +10,7 @@ export default class extends BaseSchema {
       table.string('name').notNullable()
       table.integer('sku').nullable()
       table.boolean('stock').nullable()
-      table.integer('price').nullable()
-      table.integer('category').nullable()
-
-      /**
-       * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
-       */
+      table.decimal('price').nullable()
       table.timestamp('created_at', { useTz: true }).notNullable()
       table.timestamp('updated_at', { useTz: true }).nullable()
     })

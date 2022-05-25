@@ -1,4 +1,5 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import Database from '@ioc:Adonis/Lucid/Database'
 
 import Product from 'App/Models/Product'
 
@@ -8,6 +9,44 @@ export default class ProductsController {
       const all = await Product.all()
 
       response.send({ success: all })
+      response.status(200)
+      return response
+    } catch (err) {
+      console.log(err)
+
+      response.send({ failure: true })
+      response.status(500)
+      return response
+    }
+  }
+
+  public async list({ request, response }: HttpContextContract) {
+    try {
+      const products = await Database.from('products').select(
+        'id',
+        'image',
+        'name',
+        'sku',
+        'stock',
+        'created_at',
+        'price',
+        Database.from('taxonomies')
+          .select('name')
+          .where(
+            'id',
+            Database.from('taxonomy_product')
+              .select('taxonomy_id')
+              .whereColumn('products.id', 'taxonomy_product.product_id')
+              .limit(1)
+          )
+          .as('category')
+      )
+
+      // const products = await Product.query().preload('taxonomies', (taxonomiesQuery) => {
+      //   taxonomiesQuery.select('name').first()
+      // })
+
+      response.send({ success: products })
       response.status(200)
       return response
     } catch (err) {
@@ -33,9 +72,9 @@ export default class ProductsController {
       const sku = Number(qs.sku) ?? null
       const stock = Boolean(qs.stock == 1 ? true : false)
       const price = Number(qs.price) ?? null
-      const category = Number(qs.category) ?? null
+      // const category = Number(qs.category) ?? null
 
-      const theProduct = { image, name, sku, stock, price, category }
+      const theProduct = { image, name, sku, stock, price }
       const product = await Product.create(theProduct)
 
       response.send({ success: { affirmation_id: product.id } })
@@ -47,6 +86,30 @@ export default class ProductsController {
       response.send({ failure: true })
       response.status(500)
       return response
+    }
+  }
+
+  public async delete({ request, response }: HttpContextContract) {
+    try {
+      const qs = request.qs()
+      if (!qs.product_id) {
+        response.send({ failure: { message: 'lack of data' } })
+        response.status(500)
+        return response
+      }
+
+      const productId = Number(qs.product_id)
+
+      const product = await Product.find(productId)
+      if (!product) {
+        response.send({ failure: { message: 'lack of data' } })
+        response.status(500)
+        return response
+      }
+
+      await product.delete()
+    } catch (err) {
+      console.log(err)
     }
   }
 }
