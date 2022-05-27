@@ -92,24 +92,24 @@ export default class ProductsController {
   public async delete({ request, response }: HttpContextContract) {
     try {
       const qs = request.qs()
-      if (!qs.product_id) {
+      if (!qs.product_ids) {
         response.send({ failure: { message: 'lack of data' } })
         response.status(500)
         return response
       }
 
-      const productId = Number(qs.product_id)
+      const productIds: number[] = qs.product_ids
 
-      const product = await Product.find(productId)
-      if (!product) {
-        response.send({ failure: { message: 'lack of data' } })
-        response.status(500)
-        return response
-      }
+      await Database.from('products').delete().whereIn('id', productIds)
 
-      await product.delete()
+      response.send({ success: true })
+      response.status(200)
+      return response
     } catch (err) {
       console.log(err)
+      response.send({ failure: { message: 'lack of data' } })
+      response.status(500)
+      return response
     }
   }
 }

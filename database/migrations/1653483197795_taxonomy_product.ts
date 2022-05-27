@@ -6,8 +6,18 @@ export default class TaxonomyProduct extends BaseSchema {
   public async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id').primary().notNullable()
-      table.integer('product_id').unsigned().references('products.id').notNullable()
-      table.integer('taxonomy_id').unsigned().references('taxonomies.id').notNullable()
+      table
+        .integer('product_id')
+        .unsigned()
+        .references('products.id')
+        .onDelete('CASCADE')
+        .notNullable()
+      table
+        .integer('taxonomy_id')
+        .unsigned()
+        .references('taxonomies.id')
+        .onDelete('CASCADE')
+        .notNullable()
       table.unique(['product_id', 'taxonomy_id'])
       table.timestamp('created_at', { useTz: true }).notNullable()
       table.timestamp('updated_at', { useTz: true }).nullable()
