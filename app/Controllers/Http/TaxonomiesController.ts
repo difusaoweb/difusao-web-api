@@ -1,4 +1,5 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
+import Database from '@ioc:Adonis/Lucid/Database'
 
 import Taxonomy from 'App/Models/Taxonomy'
 
@@ -11,11 +12,7 @@ export default class TaxonomiesController {
 
   public async list({ request, response }: HttpContextContract) {
     try {
-      const all = await Taxonomy.all()
-
-      all.forEach((taxonomy) => {
-        console.log(taxonomy.products)
-      })
+      const all = await Database.from('taxonomies').select('id', 'name')
 
       response.send({ success: all })
       response.status(200)
