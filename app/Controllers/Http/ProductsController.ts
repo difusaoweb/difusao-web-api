@@ -61,23 +61,26 @@ export default class ProductsController {
   public async create({ request, response }: HttpContextContract) {
     try {
       const qs = request.qs()
-      if (!qs.name) {
+      if (!!qs.name && !!qs.sku && !!qs.price && !!qs.stock) {
         response.send({ failure: { message: 'lack of data' } })
         response.status(500)
         return response
       }
 
-      const image = String(qs.image) ?? null
       const name = String(qs.name)
-      const sku = Number(qs.sku) ?? null
+      const sku = Number(qs.sku)
+      const price = Number(qs.price)
       const stock = Boolean(qs.stock == 1 ? true : false)
-      const price = Number(qs.price) ?? null
-      // const category = Number(qs.category) ?? null
 
-      const theProduct = { image, name, sku, stock, price }
-      const product = await Product.create(theProduct)
+      const description: string | null = String(qs.description) ?? null
+      const images: string[] | null = qs.images ?? null
+      const categoryId: number | null = Number(qs.category_id) ?? null
 
-      response.send({ success: { affirmation_id: product.id } })
+      const theProduct = { name, sku, price, stock, description, images, categoryId }
+      console.log(theProduct)
+      // const product = await Product.create(theProduct)
+
+      // response.send({ success: { affirmation_id: product.id } })
       response.status(200)
       return response
     } catch (err) {
