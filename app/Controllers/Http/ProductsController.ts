@@ -2,6 +2,7 @@ import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Database from '@ioc:Adonis/Lucid/Database'
 
 import Product from 'App/Models/Product'
+import Taxonomy from 'App/Models/Taxonomy'
 
 export default class ProductsController {
   public async index({ request, response }: HttpContextContract) {
@@ -61,26 +62,36 @@ export default class ProductsController {
   public async create({ request, response }: HttpContextContract) {
     try {
       const qs = request.qs()
-      if (!!qs.name && !!qs.sku && !!qs.price && !!qs.stock) {
+      if (!(!!qs.name && !!qs.price && !!qs.stock)) {
         response.send({ failure: { message: 'lack of data' } })
         response.status(500)
         return response
       }
 
       const name = String(qs.name)
-      const sku = Number(qs.sku)
       const price = Number(qs.price)
       const stock = Boolean(qs.stock == 1 ? true : false)
 
-      const description: string | null = String(qs.description) ?? null
-      const images: string[] | null = qs.images ?? null
-      const categoryId: number | null = Number(qs.category_id) ?? null
+      const description: string | null = qs.description ? String(qs.description) : null
+      // const images: string[] | null = qs.images ?? null
+      const sku = qs.sku ? Number(qs.sku) : null
+      const categoryId: number | null = qs.category_id ? Number(qs.category_id) : null
 
-      const theProduct = { name, sku, price, stock, description, images, categoryId }
-      console.log(theProduct)
-      // const product = await Product.create(theProduct)
+      const theProduct = { name, sku, price, stock, description }
+      const product = await Product.create(theProduct)
 
-      // response.send({ success: { affirmation_id: product.id } })
+      if (categoryId) {
+        const taxonomy = await Taxonomy.find(categoryId)
+        if (!taxonomy) {
+          response.send({ failure: { message: 'lack of data' } })
+          response.status(500)
+          return response
+        }
+
+        await product.related('taxonomies').attach([taxonomy.id])
+      }
+
+      response.send({ success: { product_id: product.id } })
       response.status(200)
       return response
     } catch (err) {

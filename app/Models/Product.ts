@@ -10,19 +10,19 @@ export default class Product extends BaseModel {
   public id: number
 
   @column()
-  public image: string | null
+  public name: string
 
   @column()
-  public name: string
+  public price: number
+
+  @column()
+  public stock: boolean
 
   @column()
   public sku: number | null
 
   @column()
-  public stock: boolean | null
-
-  @column()
-  public price: number | null
+  public description: string | null
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
