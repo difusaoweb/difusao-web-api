@@ -1,5 +1,7 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Database from '@ioc:Adonis/Lucid/Database'
+import Drive from '@ioc:Adonis/Core/Drive'
+import { string } from '@ioc:Adonis/Core/Helpers'
 
 import Product from 'App/Models/Product'
 import Taxonomy from 'App/Models/Taxonomy'
@@ -68,30 +70,42 @@ export default class ProductsController {
         return response
       }
 
-      const name = String(qs.name)
-      const price = Number(qs.price)
-      const stock = Boolean(qs.stock == 1 ? true : false)
+      // const name = String(qs.name)
+      // const price = Number(qs.price)
+      // const stock = Boolean(qs.stock == 1 ? true : false)
 
-      const description: string | null = qs.description ? String(qs.description) : null
-      // const images: string[] | null = qs.images ?? null
-      const sku = qs.sku ? Number(qs.sku) : null
-      const categoryId: number | null = qs.category_id ? Number(qs.category_id) : null
+      // const description: string | null = qs.description ? String(qs.description) : null
+      // const sku = qs.sku ? Number(qs.sku) : null
+      // const categoryId: number | null = qs.category_id ? Number(qs.category_id) : null
 
-      const theProduct = { name, sku, price, stock, description }
-      const product = await Product.create(theProduct)
+      // const theProduct = { name, sku, price, stock, description }
+      // const product = await Product.create(theProduct)
 
-      if (categoryId) {
-        const taxonomy = await Taxonomy.find(categoryId)
-        if (!taxonomy) {
-          response.send({ failure: { message: 'lack of data' } })
-          response.status(500)
-          return response
-        }
+      // if (categoryId) {
+      //   const taxonomy = await Taxonomy.find(categoryId)
+      //   if (!taxonomy) {
+      //     response.send({ failure: { message: 'lack of data' } })
+      //     response.status(500)
+      //     return response
+      //   }
 
-        await product.related('taxonomies').attach([taxonomy.id])
+      //   await product.related('taxonomies').attach([taxonomy.id])
+      // }
+
+      const productImage = request.file('image', {
+        size: '2mb',
+        extnames: ['png', 'jpg', 'jpeg'],
+      })
+      if (productImage) {
+        const imageNewName = `${string.generateRandom(16)}-${productImage.clientName}`
+        await productImage.moveToDisk('./', {
+          name: imageNewName,
+        })
+        const url = await Drive.getUrl(imageNewName)
+        console.log(url)
       }
 
-      response.send({ success: { product_id: product.id } })
+      // response.send({ success: { product_id: product.id } })
       response.status(200)
       return response
     } catch (err) {
