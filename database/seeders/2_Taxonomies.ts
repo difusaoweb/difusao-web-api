@@ -1,4 +1,5 @@
 import BaseSeeder from '@ioc:Adonis/Lucid/Seeder'
+
 import Taxonomy from 'App/Models/Taxonomy'
 
 export default class TaxonomySeeder extends BaseSeeder {
