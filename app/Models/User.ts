@@ -18,7 +18,7 @@ export default class User extends BaseModel {
   public password: string
 
   @column()
-  public displayName: string
+  public name: string
 
   @hasMany(() => Product, {
     foreignKey: 'author',
