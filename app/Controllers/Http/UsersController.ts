@@ -4,7 +4,7 @@ import Database from '@ioc:Adonis/Lucid/Database'
 import User from 'App/Models/User'
 
 export default class UsersController {
-  public async list({ request, response }: HttpContextContract) {
+  public async list ({ request, response }: HttpContextContract) {
     try {
       const users = await Database.from('products').select(
         'id',

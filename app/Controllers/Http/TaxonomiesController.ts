@@ -4,13 +4,13 @@ import Database from '@ioc:Adonis/Lucid/Database'
 import Taxonomy from 'App/Models/Taxonomy'
 
 export default class TaxonomiesController {
-  public async index() {
+  public async index () {
     const all = await Taxonomy.all()
 
     return all
   }
 
-  public async list({ request, response }: HttpContextContract) {
+  public async list ({ request, response }: HttpContextContract) {
     try {
       const all = await Database.from('taxonomies').select('id', 'name')
 
@@ -26,7 +26,7 @@ export default class TaxonomiesController {
     }
   }
 
-  public async create({ request, response }: HttpContextContract) {
+  public async create ({ request, response }: HttpContextContract) {
     try {
       const qs = request.qs()
       if (!qs.name) {

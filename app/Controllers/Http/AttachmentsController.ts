@@ -5,7 +5,7 @@ import Attachment from 'App/Models/Attachment'
 import Drive from '@ioc:Adonis/Core/Drive'
 
 export default class AttachmentsController {
-  public async index({ request, response }: HttpContextContract) {
+  public async index ({ request, response }: HttpContextContract) {
     try {
       const all = await Attachment.all()
 
@@ -21,7 +21,7 @@ export default class AttachmentsController {
     }
   }
 
-  public async show({ request, response }: HttpContextContract) {
+  public async show ({ request, response }: HttpContextContract) {
     try {
       const qs = request.qs()
       if (!qs.id) {
@@ -50,14 +50,14 @@ export default class AttachmentsController {
     }
   }
 
-  public async create({ auth, request, response }: HttpContextContract) {
+  public async create ({ auth, request, response }: HttpContextContract) {
     try {
       await auth.use('api').authenticate()
       const currentUserId: number = auth.use('api').user.id
 
       const attachmentUpload = request.file('image', {
         size: '2mb',
-        extnames: ['png', 'jpg', 'jpeg'],
+        extnames: ['png', 'jpg', 'jpeg']
       })
       if (!attachmentUpload) {
         response.send({ failure: { message: 'file not accepeted' } })
@@ -68,14 +68,14 @@ export default class AttachmentsController {
       const attachmentName = attachmentUpload.clientName
       const attachmentFileName = `${string.generateRandom(16)}-${attachmentUpload.clientName}`
       await attachmentUpload.moveToDisk('./', {
-        name: attachmentFileName,
+        name: attachmentFileName
       })
       const attachmentFileUrl = await Drive.getUrl(attachmentFileName)
 
       const attachmentData = {
         title: attachmentName,
         source: attachmentFileUrl,
-        author: currentUserId,
+        author: currentUserId
       }
       const attachment = await Attachment.create(attachmentData)
 
@@ -91,7 +91,7 @@ export default class AttachmentsController {
     }
   }
 
-  public async update({ auth, request, response }: HttpContextContract) {
+  public async update ({ auth, request, response }: HttpContextContract) {
     try {
       await auth.use('api').authenticate()
       const currentUserId: number = auth.use('api').user.id
@@ -133,7 +133,7 @@ export default class AttachmentsController {
     }
   }
 
-  public async delete({ auth, request, response }: HttpContextContract) {
+  public async delete ({ auth, request, response }: HttpContextContract) {
     try {
       await auth.use('api').authenticate()
       const currentUserId: number = auth.use('api').user.id

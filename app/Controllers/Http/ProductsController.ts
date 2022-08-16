@@ -7,7 +7,7 @@ import Product from 'App/Models/Product'
 import Taxonomy from 'App/Models/Taxonomy'
 
 export default class ProductsController {
-  public async index({ request, response }: HttpContextContract) {
+  public async index ({ request, response }: HttpContextContract) {
     try {
       const all = await Product.all()
 
@@ -23,7 +23,7 @@ export default class ProductsController {
     }
   }
 
-  public async list({ request, response }: HttpContextContract) {
+  public async list ({ request, response }: HttpContextContract) {
     try {
       const products = await Database.from('products').select(
         'id',
@@ -61,7 +61,7 @@ export default class ProductsController {
     }
   }
 
-  public async create({ request, response }: HttpContextContract) {
+  public async create ({ request, response }: HttpContextContract) {
     try {
       const qs = request.qs()
       if (!(!!qs.name && !!qs.price && !!qs.stock)) {
@@ -94,12 +94,12 @@ export default class ProductsController {
 
       const productImage = request.file('image', {
         size: '2mb',
-        extnames: ['png', 'jpg', 'jpeg'],
+        extnames: ['png', 'jpg', 'jpeg']
       })
       if (productImage) {
         const imageNewName = `${string.generateRandom(16)}-${productImage.clientName}`
         await productImage.moveToDisk('./', {
-          name: imageNewName,
+          name: imageNewName
         })
         const url = await Drive.getUrl(imageNewName)
         console.log(url)
@@ -117,7 +117,7 @@ export default class ProductsController {
     }
   }
 
-  public async delete({ request, response }: HttpContextContract) {
+  public async delete ({ request, response }: HttpContextContract) {
     try {
       const qs = request.qs()
       if (!qs.product_ids) {
