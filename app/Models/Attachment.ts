@@ -11,9 +11,6 @@ export default class Attachment extends BaseModel {
   @column()
   public source: string
 
-  @column()
-  public author: number
-
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
 

@@ -1,9 +1,6 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, HasMany, hasMany, beforeSave } from '@ioc:Adonis/Lucid/Orm'
+import { BaseModel, column, beforeSave } from '@ioc:Adonis/Lucid/Orm'
 import Hash from '@ioc:Adonis/Core/Hash'
-
-import Product from 'App/Models/Product'
-import Attachment from 'App/Models/Attachment'
 
 export default class User extends BaseModel {
   public static table = 'users'
@@ -19,16 +16,6 @@ export default class User extends BaseModel {
 
   @column()
   public name: string
-
-  @hasMany(() => Product, {
-    foreignKey: 'author',
-  })
-  public products: HasMany<typeof Product>
-
-  @hasMany(() => Attachment, {
-    foreignKey: 'author',
-  })
-  public attachments: HasMany<typeof Attachment>
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime

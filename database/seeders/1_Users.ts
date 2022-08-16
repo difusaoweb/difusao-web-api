@@ -6,15 +6,15 @@ export default class UserSeeder extends BaseSeeder {
   public async run() {
     await User.createMany([
       {
-        email: 'johnsistema@gmail.com',
-        password: 'johnsistemaPASS123',
-        name: 'John Sistema',
+        email: 'difusaowebinc@gmail.com',
+        password: '123',
+        name: 'Difusão Web'
       },
       {
         email: 'pazwiatagan@gmail.com',
-        password: '123456789',
-        name: 'Wiatagan',
-      },
+        password: '123',
+        name: 'Wiatagan Paz'
+      }
     ])
   }
 }

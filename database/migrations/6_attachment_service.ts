@@ -1,30 +1,30 @@
 import BaseSchema from '@ioc:Adonis/Lucid/Schema'
 
-export default class TaxonomyProduct extends BaseSchema {
-  protected tableName = 'taxonomy_product'
+export default class AttachmentService extends BaseSchema {
+  protected tableName = 'attachment_service'
 
-  public async up() {
+  public async up () {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id').primary().notNullable()
       table
-        .integer('product_id')
+        .integer('service_id')
         .unsigned()
-        .references('products.id')
+        .references('services.id')
         .onDelete('CASCADE')
         .notNullable()
       table
-        .integer('taxonomy_id')
+        .integer('attachment_id')
         .unsigned()
-        .references('taxonomies.id')
+        .references('attachments.id')
         .onDelete('CASCADE')
         .notNullable()
-      table.unique(['product_id', 'taxonomy_id'])
+      table.unique(['service_id', 'attachment_id'])
       table.timestamp('created_at', { useTz: true }).notNullable()
       table.timestamp('updated_at', { useTz: true }).nullable()
     })
   }
 
-  public async down() {
+  public async down () {
     this.schema.dropTable(this.tableName)
   }
 }
