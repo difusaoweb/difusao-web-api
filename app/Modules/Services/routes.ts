@@ -3,9 +3,9 @@ Route.group(() => {
   Route.group(() => {
     Route.get('/list', 'ServicesController.list')
     Route.group(() => {
-      Route.post('/create', 'ServicesController.create')
-      Route.post('/update', 'ServicesController.update')
       Route.get('/delete', 'ServicesController.delete')
+      Route.get('/create', 'ServicesController.create')
+      Route.get('/update', 'ServicesController.update')
     }).middleware('auth')
   }).prefix('/services')
 }).prefix('/v1')

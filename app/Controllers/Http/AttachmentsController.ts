@@ -1,174 +1,180 @@
 import { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import { string } from '@ioc:Adonis/Core/Helpers'
+import Drive from '@ioc:Adonis/Core/Drive'
+import Database from '@ioc:Adonis/Lucid/Database'
+import { schema } from '@ioc:Adonis/Core/Validator'
+import Env from '@ioc:Adonis/Core/Env'
+import { DateTime } from 'luxon'
 
 import Attachment from 'App/Models/Attachment'
-import Drive from '@ioc:Adonis/Core/Drive'
 
 export default class AttachmentsController {
-  public async index ({ request, response }: HttpContextContract) {
-    try {
-      const all = await Attachment.all()
+  public async list ({ request, response }: HttpContextContract) {
+    const controllerSchema = schema.create({
+      page: schema.number(),
+      per_page: schema.number()
+    })
 
-      response.send({ success: all })
+    try {
+      const { page, per_page: perPage } = await request.validate({ schema: controllerSchema })
+
+      const thePage = perPage === -1 ? 1 : page
+      const thePerPage = perPage === -1 ? 999999999999 : perPage
+
+      const responseDb = await Database.from('attachments')
+        .select('id', 'title', 'source', 'created_at')
+        .orderBy('created_at', 'desc')
+        .paginate(thePage, thePerPage)
+
+      if (responseDb.all().length === 0) {
+        response.send({ failure: { message: 'Attachments not found.' } })
+        response.status(404)
+        return response
+      }
+
+      response.send({
+        success: {
+          attachments: responseDb.all(),
+          last_page: responseDb.lastPage,
+          total: responseDb.total
+        }
+      })
       response.status(200)
       return response
     } catch (err) {
       console.log(err)
-
-      response.send({ failure: true })
-      response.status(500)
+      response.send({ failure: { message: err?.code ?? 'Error getting attachment list.' } })
+      response.status(err?.status ?? 500)
       return response
     }
   }
 
   public async show ({ request, response }: HttpContextContract) {
-    try {
-      const qs = request.qs()
-      if (!qs.id) {
-        response.send({ failure: { message: 'lack of data' } })
-        response.status(500)
-        return response
-      }
-      const AttachmentId = String(qs.id)
+    const controllerSchema = schema.create({
+      attachment_id: schema.number()
+    })
 
-      const attachment = await Attachment.find(AttachmentId)
+    try {
+      const { attachment_id: AttachmentId } = await request.validate({ schema: controllerSchema })
+
+      const attachment = await Attachment.findOrFail(AttachmentId)
       if (!attachment) {
-        response.send({ failure: true })
+        response.send({ failure: { message: 'Attachment not found.' } })
         response.status(404)
         return response
       }
 
-      response.send({ success: attachment })
+      const theAttachment = { title: attachment.title, source: attachment.source }
+
+      response.send({ success: { attachment: theAttachment } })
       response.status(200)
       return response
     } catch (err) {
       console.log(err)
-
-      response.send({ failure: true })
-      response.status(500)
+      response.send({ failure: { message: err?.code ?? 'Error getting attachment.' } })
+      response.status(err?.status ?? 500)
       return response
     }
   }
 
-  public async create ({ auth, request, response }: HttpContextContract) {
-    try {
-      await auth.use('api').authenticate()
-      const currentUserId: number = auth.use('api').user.id
-
-      const attachmentUpload = request.file('image', {
+  public async create ({ request, response }: HttpContextContract) {
+    const controllerSchema = schema.create({
+      image: schema.file({
         size: '2mb',
         extnames: ['png', 'jpg', 'jpeg']
       })
-      if (!attachmentUpload) {
-        response.send({ failure: { message: 'file not accepeted' } })
-        response.status(404)
-        return response
-      }
+    })
+
+    try {
+      const { image: attachmentUpload } = await request.validate({ schema: controllerSchema })
 
       const attachmentName = attachmentUpload.clientName
-      const attachmentFileName = `${string.generateRandom(16)}-${attachmentUpload.clientName}`
+      const attachmentFileName = `${DateTime.local().toMillis()}-${attachmentName}`
+
       await attachmentUpload.moveToDisk('./', {
         name: attachmentFileName
       })
-      const attachmentFileUrl = await Drive.getUrl(attachmentFileName)
+      let attachmentFileUrl = await Drive.getUrl(attachmentFileName)
 
-      const attachmentData = {
-        title: attachmentName,
-        source: attachmentFileUrl,
-        author: currentUserId
+      if (Env.get('DRIVE_DISK') === 'local') {
+        attachmentFileUrl = `http://${Env.get('HOST')}:${Env.get('PORT')}${attachmentFileUrl}`
       }
-      const attachment = await Attachment.create(attachmentData)
+
+      const attachment = await Attachment.create({
+        title: attachmentName.replace(/\.[^/.]+$/, ''),
+        source: attachmentFileUrl
+      })
 
       response.send({ success: { attachment_id: attachment.id } })
       response.status(200)
       return response
     } catch (err) {
       console.log(err)
-
-      response.send({ failure: true })
-      response.status(500)
+      response.send({ failure: { message: err?.code ?? 'Error while creating attachment.' } })
+      response.status(err?.status ?? 500)
       return response
     }
   }
 
-  public async update ({ auth, request, response }: HttpContextContract) {
-    try {
-      await auth.use('api').authenticate()
-      const currentUserId: number = auth.use('api').user.id
+  public async update ({ request, response }: HttpContextContract) {
+    const controllerSchema = schema.create({
+      attachment_id: schema.number(),
+      attachment_title: schema.string()
+    })
 
-      const qs = request.qs()
-      if (!qs.id || !qs.title) {
-        response.send({ failure: { message: 'lack of data' } })
-        response.status(500)
-        return response
-      }
-      const AttachmentId = String(qs.id)
-      const AttachmentNewTitle = String(qs.title)
+    try {
+      const { attachment_id: AttachmentId, attachment_title: attachmentTitle } = await request.validate({ schema: controllerSchema })
 
       const attachment = await Attachment.find(AttachmentId)
       if (!attachment) {
-        response.send({ failure: { message: 'attachment not found' } })
+        response.send({ failure: { message: 'Attachment not found.' } })
         response.status(404)
         return response
       }
 
-      if (attachment.author !== currentUserId) {
-        response.send({ failure: { message: 'not access' } })
-        response.status(403)
-        return response
-      }
-
-      attachment.title = AttachmentNewTitle
+      attachment.title = attachmentTitle
       attachment.save()
 
-      response.send({ success: true })
+      response.send({ success: { updated: true } })
       response.status(200)
       return response
     } catch (err) {
       console.log(err)
-
-      response.send({ failure: true })
-      response.status(500)
+      response.send({ failure: { message: err?.code ?? 'Error while updating attachment.' } })
+      response.status(err?.status ?? 500)
       return response
     }
   }
 
-  public async delete ({ auth, request, response }: HttpContextContract) {
+  public async delete ({ request, response }: HttpContextContract) {
+    const controllerSchema = schema.create({
+      attachments_id: schema.array().members(schema.number())
+    })
     try {
-      await auth.use('api').authenticate()
-      const currentUserId: number = auth.use('api').user.id
+      const { attachments_id: attachmentsId } = await request.validate({ schema: controllerSchema })
 
-      const qs = request.qs()
-      if (!qs.id) {
-        response.send({ failure: { message: 'lack of data' } })
-        response.status(500)
-        return response
-      }
-      const AttachmentId = String(qs.id)
-
-      const attachment = await Attachment.find(AttachmentId)
-      if (!attachment) {
-        response.send({ failure: { message: 'attachment not found' } })
+      const attachments = await Attachment.findMany(attachmentsId)
+      if (attachments.length !== attachmentsId.length) {
+        response.send({ failure: { message: 'Attachment not found.' } })
         response.status(404)
         return response
       }
 
-      if (attachment.author !== currentUserId) {
-        response.send({ failure: { message: 'not access' } })
-        response.status(403)
-        return response
-      }
+      await Promise.all(attachments.map(async attachment => {
+        const file = attachment.source.split('/').pop()
+        if (!file) return
+        await Drive.delete(file)
+      }))
 
-      await attachment.delete()
+      await Database.from('attachments').whereIn('id', attachmentsId).delete()
 
-      response.send({ success: true })
+      response.send({ success: { deleted: true } })
       response.status(200)
       return response
     } catch (err) {
       console.log(err)
-
-      response.send({ failure: true })
-      response.status(500)
+      response.send({ failure: { message: err?.code ?? 'Error deleting the attachment(s).' } })
+      response.status(err?.status ?? 500)
       return response
     }
   }
