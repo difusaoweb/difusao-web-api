@@ -79,14 +79,14 @@ export default class AttachmentsController {
 
   public async create ({ request, response }: HttpContextContract) {
     const controllerSchema = schema.create({
-      image: schema.file({
+      file: schema.file({
         size: '2mb',
         extnames: ['png', 'jpg', 'jpeg']
       })
     })
 
     try {
-      const { image: attachmentUpload } = await request.validate({ schema: controllerSchema })
+      const { file: attachmentUpload } = await request.validate({ schema: controllerSchema })
 
       const attachmentName = attachmentUpload.clientName
       const attachmentFileName = `${DateTime.local().toMillis()}-${attachmentName}`
@@ -105,7 +105,14 @@ export default class AttachmentsController {
         source: attachmentFileUrl
       })
 
-      response.send({ success: { attachment_id: attachment.id } })
+      const attachmentInfo = {
+        id: attachment.id,
+        title: attachment.title,
+        source: attachment.source,
+        createdAt: attachment.createdAt
+      }
+
+      response.send({ success: { attachment: attachmentInfo } })
       response.status(200)
       return response
     } catch (err) {
