@@ -3,6 +3,7 @@ import Database from '@ioc:Adonis/Lucid/Database'
 import { schema } from '@ioc:Adonis/Core/Validator'
 
 import User from 'App/Models/User'
+import UtilsService from 'App/Services/UtilsService'
 
 export default class UsersController {
   public async list ({ request, response }: HttpContextContract) {
@@ -18,7 +19,7 @@ export default class UsersController {
       const thePerPage = perPage === -1 ? 999999999999 : perPage
 
       const responseDb = await Database.from('users')
-        .select('*')
+        .select('id', 'email', 'name', 'created_at')
         .orderBy('created_at', 'desc')
         .paginate(thePage, thePerPage)
 
@@ -28,9 +29,13 @@ export default class UsersController {
         return response
       }
 
+      const users = responseDb.all().map(user => {
+        return UtilsService.camelCaseKeys(user)
+      })
+
       response.send({
         success: {
-          users: responseDb.all(),
+          users,
           last_page: responseDb.lastPage,
           total: responseDb.total
         }
@@ -40,6 +45,33 @@ export default class UsersController {
     } catch (err) {
       console.log(err)
       response.send({ failure: { message: err?.code ?? 'Error getting user list.' } })
+      response.status(err?.status ?? 500)
+      return response
+    }
+  }
+
+  public async delete ({ request, response }: HttpContextContract) {
+    const controllerSchema = schema.create({
+      usersId: schema.array().members(schema.number())
+    })
+    try {
+      const { usersId } = await request.validate({ schema: controllerSchema })
+
+      const users = await User.findMany(usersId)
+      if (users.length !== usersId.length) {
+        response.send({ failure: { message: 'Users not found.' } })
+        response.status(404)
+        return response
+      }
+
+      await Database.from('users').whereIn('id', usersId).delete()
+
+      response.send({ success: { deleted: true } })
+      response.status(200)
+      return response
+    } catch (err) {
+      console.log(err)
+      response.send({ failure: { message: err?.code ?? 'Error deleting the user(s).' } })
       response.status(err?.status ?? 500)
       return response
     }
