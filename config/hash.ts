@@ -49,7 +49,7 @@ export default hashConfig({
       iterations: 3,
       memory: 4096,
       parallelism: 1,
-      saltSize: 16,
+      saltSize: 16
     },
 
     /*
@@ -67,7 +67,7 @@ export default hashConfig({
     */
     bcrypt: {
       driver: 'bcrypt',
-      rounds: 10,
-    },
-  },
+      rounds: 10
+    }
+  }
 })
