@@ -3,7 +3,7 @@ import BaseSchema from '@ioc:Adonis/Lucid/Schema'
 export default class AttachmentCase extends BaseSchema {
   protected tableName = 'attachment_case'
 
-  public async up() {
+  public async up () {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id').primary().notNullable()
       table.integer('case_id').unsigned().references('cases.id').onDelete('CASCADE').notNullable()
@@ -19,7 +19,7 @@ export default class AttachmentCase extends BaseSchema {
     })
   }
 
-  public async down() {
+  public async down () {
     this.schema.dropTable(this.tableName)
   }
 }
