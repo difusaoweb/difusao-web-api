@@ -3,7 +3,7 @@ import BaseSeeder from '@ioc:Adonis/Lucid/Seeder'
 import Attachment from 'App/Models/Attachment'
 
 export default class AttachmentSeeder extends BaseSeeder {
-  public async run() {
+  public async run () {
     await Attachment.createMany([
       {
         title: 'Desenvolvimento de Aplicativo Android',

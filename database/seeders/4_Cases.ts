@@ -3,7 +3,7 @@ import BaseSeeder from '@ioc:Adonis/Lucid/Seeder'
 import Case from 'App/Models/Case'
 
 export default class CaseSeeder extends BaseSeeder {
-  public async run() {
+  public async run () {
     await Case.createMany([
       {
         title: 'Manzzanti - PPC',

@@ -3,7 +3,7 @@ import BaseSeeder from '@ioc:Adonis/Lucid/Seeder'
 import Service from 'App/Models/Service'
 
 export default class ServiceSeeder extends BaseSeeder {
-  public async run() {
+  public async run () {
     await Service.createMany([
       {
         title: 'Desenvolvimento de Aplicativo Android',
