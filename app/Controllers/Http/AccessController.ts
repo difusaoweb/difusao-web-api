@@ -49,13 +49,6 @@ export default class AccessesController {
         return response
       }
 
-      await Database.query()
-        .from('api_tokens')
-        .where('user_id', user.id)
-        .andWhere('name', 'login')
-        .andWhere('type', 'api')
-        .delete()
-
       const { token } = await auth.use('api').generate(user, {
         name: 'login',
         expiresIn: '7days'
