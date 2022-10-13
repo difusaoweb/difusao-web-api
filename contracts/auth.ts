@@ -5,7 +5,13 @@
  * file.
  */
 
-import Access from 'App/Models/Access'
+import {
+  OATGuardContract,
+  OATGuardConfig,
+  LucidProviderContract,
+  LucidProviderConfig
+} from '@ioc:Adonis/Addons/Auth'
+import User from 'App/Models/User'
 
 declare module '@ioc:Adonis/Addons/Auth' {
   /*
@@ -34,8 +40,8 @@ declare module '@ioc:Adonis/Addons/Auth' {
     |
     */
     user: {
-      implementation: LucidProviderContract<typeof Access>
-      config: LucidProviderConfig<typeof Access>
+      implementation: LucidProviderContract<typeof User>
+      config: LucidProviderConfig<typeof User>
     }
   }
 
