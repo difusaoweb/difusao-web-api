@@ -61,10 +61,16 @@ export default class AuthMiddleware {
    * Handle request
    */
   public async handle (
-    { auth }: HttpContextContract,
+    { auth, request }: HttpContextContract,
     next: () => Promise<void>,
     customGuards: (keyof GuardsList)[]
   ) {
+    console.log(request.headers().authorization)
+    // console.log(auth.use('api').token)
+
+    await auth.use('api').authenticate()
+    console.log(auth.use('api').user)
+
     /**
      * Uses the user defined guards or the default guard mentioned in
      * the config file
