@@ -50,6 +50,67 @@ export default class UsersController {
     }
   }
 
+  public async show ({ request, response }: HttpContextContract) {
+    const controllerSchema = schema.create({
+      userId: schema.number()
+    })
+    try {
+      const { userId } = await request.validate({ schema: controllerSchema })
+
+      const user = await User.find(userId)
+      if (user === null) {
+        response.send({ failure: { message: 'User not found.' } })
+        response.status(404)
+        return response
+      }
+
+      const userObj = user.toObject()
+      delete userObj.createdAt
+      delete userObj.updatedAt
+      delete userObj.password
+      delete userObj.$extras
+
+      response.send({
+        success: {
+          user: userObj
+        }
+      })
+      response.status(200)
+      return response
+    } catch (err) {
+      console.log(err)
+      response.send({ failure: { message: err?.code ?? 'Error while getting the user.' } })
+      response.status(err?.status ?? 500)
+      return response
+    }
+  }
+
+  public async create ({ request, response }: HttpContextContract) {
+    const controllerSchema = schema.create({
+      email: schema.string(),
+      password: schema.string(),
+      name: schema.string()
+    })
+    try {
+      const { email, password, name } = await request.validate({ schema: controllerSchema })
+
+      const user = await User.create({
+        email,
+        password,
+        name
+      })
+
+      response.send({ success: { userId: user.id } })
+      response.status(200)
+      return response
+    } catch (err) {
+      console.log(err)
+      response.send({ failure: { message: err?.code ?? 'Error when creating the user.' } })
+      response.status(err?.status ?? 500)
+      return response
+    }
+  }
+
   public async delete ({ request, response }: HttpContextContract) {
     const controllerSchema = schema.create({
       usersId: schema.array().members(schema.number())
