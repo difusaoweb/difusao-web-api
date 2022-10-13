@@ -18,7 +18,7 @@ export default class Service extends BaseModel {
   @manyToMany(() => Attachment, {
     pivotTimestamps: true
   })
-  public attachment: ManyToMany<typeof Attachment>
+  public attachments: ManyToMany<typeof Attachment>
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime
